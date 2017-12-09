@@ -15,16 +15,8 @@ public class Peer implements Serializable{
         return portnumber;
     }
 
-    public void setPortnumber(int portnumber) {
-        this.portnumber = portnumber;
-    }
-
     public String getIp() {
         return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
     }
 
     @Override

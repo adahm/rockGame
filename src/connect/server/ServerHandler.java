@@ -18,7 +18,7 @@ public class ServerHandler extends Thread{
     public ServerHandler(Socket socket, GameState gameState){
         this.gameState = gameState;
         peerSocket = socket;
-        try{
+        try{ //set up reader to read input and writers to write text and objects
             input = new BufferedReader(new InputStreamReader(peerSocket.getInputStream()));
             output = new PrintWriter(peerSocket.getOutputStream(),true);
             objout = new ObjectOutputStream(peerSocket.getOutputStream());
@@ -33,33 +33,29 @@ public class ServerHandler extends Thread{
             while((msg = input.readLine()) != null){
                 String[] msgspliter = msg.split(" ");
                 switch (msgspliter[0]){
-                    case "join":
+                    case "join": //someone wants to join
                         ArrayList<Peer> listWithMypeer = (ArrayList<Peer>) gameState.getPeerList().clone();
-                        listWithMypeer.add(new Peer(gameState.getMyIp(),gameState.getMyport()));
-                        objout.writeObject(listWithMypeer);
+                        listWithMypeer.add(new Peer(gameState.getMyIp(),gameState.getMyport()));//send my peerlist with myip and port added
+                        objout.writeObject(listWithMypeer); //send the list
                         objout.flush();
                         Peer newPeer = new Peer(msgspliter[1],Integer.parseInt(msgspliter[2]));
-                        for (Peer p : gameState.getPeerList()) {
+                        for (Peer p : gameState.getPeerList()) { //send out that a new peer has joined to all the other nodes in network
                             connection.connect(p.getIp(), p.getPortnumber()); //connect to the peer
                             connection.sendNewpeer(newPeer);
                             connection.close(); //close connection
                         }
                         gameState.addPeer(newPeer);
                         break;
-
-                        //lägg i peerlista och skicka ut ny peer till alla och skicka din lista till honom
-                    case "newpeer":
+                    case "newpeer": //new peer joined add to list
                         gameState.addPeer(new Peer(msgspliter[1],Integer.parseInt(msgspliter[2])));
                         break;
-                        //lägg i peerlista
-                    case "choose":
+                    case "choose"://player choose move add to movelist
                         gameState.addMove(msgspliter[1]);
-                        //lägg move i kön
                         break;
-                    case "quit":
+                    case "quit": //someone quit remove from peerlist
                         gameState.removePeer(new Peer(msgspliter[1],Integer.parseInt(msgspliter[2])));
                         break;
-                        //ta bort från peerlista
+
                 }
             }
         }catch (IOException e){
